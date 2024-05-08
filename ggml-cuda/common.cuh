@@ -317,11 +317,10 @@ static __device__ __forceinline__ int __dp4a(const int a, const int b, int c) {
 #endif // defined(GGML_USE_HIPBLAS)
 
 #define FP16_AVAILABLE (defined(GGML_USE_HIPBLAS) && defined(__HIP_PLATFORM_AMD__)) || __CUDA_ARCH__ >= CC_PASCAL
-
-#define FP16_MMA_AVAILABLE !(defined(GGML_USE_HIPBLAS) && defined(__HIP_PLATFORM_AMD__)) && __CUDA_ARCH__ >= CC_VOLTA
+#define FP16_MMA_AVAILABLE (defined(GGML_USE_HIPBLAS) && defined(__HIP_PLATFORM_AMD__)) && __CUDA_ARCH__ >= CC_VOLTA
 
 static bool fp16_mma_available(const int cc) {
-    return cc < CC_OFFSET_AMD && cc >= CC_VOLTA;
+    return true;
 }
 
 [[noreturn]]
@@ -414,7 +413,7 @@ static __device__ __forceinline__ half ggml_cuda_hmax(const half a, const half b
 }
 
 static __device__ __forceinline__ half2 ggml_cuda_hmax2(const half2 a, const half2 b) {
-#if !(defined(GGML_USE_HIPBLAS) && defined(__HIP_PLATFORM_AMD__))
+//#if !(defined(GGML_USE_HIPBLAS) && defined(__HIP_PLATFORM_AMD__))
 
 #if CUDART_VERSION >= CUDART_HMAX
     return __hmax2(a, b);
@@ -425,15 +424,15 @@ static __device__ __forceinline__ half2 ggml_cuda_hmax2(const half2 a, const hal
     return ret;
 #endif // CUDART_VERSION >= CUDART_HMAX
 
-#else
-    GGML_UNUSED(a);
-    GGML_UNUSED(b);
-    NO_DEVICE_CODE;
-#endif // !(defined(GGML_USE_HIPBLAS) && defined(__HIP_PLATFORM_AMD__))
+//#else
+//    GGML_UNUSED(a);
+//    GGML_UNUSED(b);
+//    NO_DEVICE_CODE;
+//#endif // !(defined(GGML_USE_HIPBLAS) && defined(__HIP_PLATFORM_AMD__))
 }
 
 static __device__ __forceinline__ half2 warp_reduce_max(half2 x) {
-#if !(defined(GGML_USE_HIPBLAS) && defined(__HIP_PLATFORM_AMD__)) && __CUDA_ARCH__ >= CC_PASCAL
+#if (defined(GGML_USE_HIPBLAS) && defined(__HIP_PLATFORM_AMD__)) || __CUDA_ARCH__ >= CC_PASCAL
 #pragma unroll
    for (int mask = 16; mask > 0; mask >>= 1) {
        x = ggml_cuda_hmax2(x, __shfl_xor_sync(0xffffffff, x, mask, 32));
