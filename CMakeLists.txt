@@ -1,6 +1,17 @@
 cmake_minimum_required(VERSION 3.14) # for add_link_options and implicit target directories.
 project("llama.cpp" C CXX)
 include(CheckIncludeFileCXX)
+include(FetchContent)
+
+FetchContent_Declare(
+        rocwmma
+        GIT_REPOSITORY https://github.com/ROCm/rocWMMA
+        GIT_TAG master
+        UPDATE_DISCONNECTED TRUE
+        GIT_SHALLOW TRUE
+)
+
+FetchContent_MakeAvailable(rocwmma)
 
 #set(CMAKE_WARN_DEPRECATED YES)
 set(CMAKE_WARN_UNUSED_CLI YES)

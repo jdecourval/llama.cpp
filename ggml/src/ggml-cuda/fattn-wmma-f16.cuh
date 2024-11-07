@@ -2,7 +2,14 @@
 #include "fattn-common.cuh"
 
 #ifdef FP16_MMA_AVAILABLE
+#if defined(GGML_USE_HIPBLAS) && defined(__HIP_PLATFORM_AMD__)
+#include <rocwmma/rocwmma.hpp>
+namespace nvcuda {
+namespace wmma = rocwmma;
+}
+#else
 #include <mma.h>
+#endif
 #endif // FP16_MMA_AVAILABLE
 
 // D == head size, VKQ_stride == num VKQ rows calculated in parallel:
@@ -171,7 +178,7 @@ static __global__ void flash_attn_ext_f16(
             frag_c_KQ KQ_c[ncols/frag_n];
 #pragma unroll
             for (int j = 0; j < ncols/frag_n; ++j) {
-                nvcuda::wmma::fill_fragment(KQ_c[j], 0.0f);
+                nvcuda::wmma::fill_fragment(KQ_c[j], KQ_acc_t{0.0f});
             }
 #pragma unroll
             for (int k_KQ_0 = 0; k_KQ_0 < D; k_KQ_0 += 16) {
@@ -315,7 +322,7 @@ static __global__ void flash_attn_ext_f16(
         for (int i_VKQ_0 = 0; i_VKQ_0 < D; i_VKQ_0 += VKQ_stride) {
 #pragma unroll
             for (int j = 0; j < ncols/frag_n; ++j) {
-                nvcuda::wmma::fill_fragment(VKQ_c[i_VKQ_0/VKQ_stride][j], 0.0f);
+                nvcuda::wmma::fill_fragment(VKQ_c[i_VKQ_0/VKQ_stride][j], __half{0.0f});
             }
 
 #pragma unroll

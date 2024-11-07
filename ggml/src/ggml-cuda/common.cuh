@@ -128,7 +128,7 @@ typedef float2 dfloat2;
 #define FAST_FP16_AVAILABLE
 #endif // defined(FP16_AVAILABLE) && __CUDA_ARCH__ != 610
 
-#if !(defined(GGML_USE_HIPBLAS) && defined(__HIP_PLATFORM_AMD__)) && __CUDA_ARCH__ >= CC_VOLTA
+#if (defined(GGML_USE_HIPBLAS) && defined(__HIP_PLATFORM_AMD__)) || __CUDA_ARCH__ >= CC_VOLTA
 #define FP16_MMA_AVAILABLE
 #endif // !(defined(GGML_USE_HIPBLAS) && defined(__HIP_PLATFORM_AMD__)) && __CUDA_ARCH__ >= CC_VOLTA
 
@@ -145,7 +145,7 @@ static constexpr bool fast_fp16_available(const int cc) {
 }
 
 static constexpr bool fp16_mma_available(const int cc) {
-    return cc < CC_OFFSET_AMD && cc >= CC_VOLTA;
+    return cc >= CC_VOLTA;
 }
 
 static constexpr bool int8_mma_available(const int cc) {

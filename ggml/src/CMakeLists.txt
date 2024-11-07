@@ -1391,6 +1391,8 @@ add_library(ggml
             ggml-aarch64.c            ggml-aarch64.h
             )
 
+target_link_libraries(ggml PUBLIC rocwmma)
+
 if (EMSCRIPTEN)
     set_target_properties(ggml PROPERTIES COMPILE_FLAGS "-msimd128")
 endif()
@@ -1400,6 +1402,7 @@ target_include_directories(ggml PUBLIC    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOUR
 target_include_directories(ggml PRIVATE . ${GGML_EXTRA_INCLUDES})
 target_link_directories   (ggml PRIVATE   ${GGML_EXTRA_LIBDIRS})
 target_compile_features   (ggml PRIVATE c_std_11) # don't bump
+target_compile_features   (ggml PRIVATE cxx_std_17) # don't bump
 
 list(APPEND GGML_EXTRA_LIBS_PRIVATE Threads::Threads)
 
